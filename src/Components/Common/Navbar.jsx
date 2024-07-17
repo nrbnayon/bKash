@@ -1,10 +1,34 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
 import Logo from "../../assets/logo.jpg";
-import PropTypes from "prop-types";
-
-const Navbar = ({ role = "user", handleLogout }) => {
+import { useSelector, useDispatch } from "react-redux";
+import { useState } from "react";
+import { logout } from "../../Redux/Reducers/User/userSlice";
+import useAxiosPublic from "../../hooks/useAxiosPublic";
+import { toast } from "react-toastify";
+import { useRole } from "../../hooks/useRole";
+const Navbar = () => {
+  const { role } = useRole();
+  const { currentUser } = useSelector((state) => state.user);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const axiosPublic = useAxiosPublic();
+
+  const handleLogout = async () => {
+    try {
+      const response = await axiosPublic.post("/api/user/signout");
+      if (response.status !== 200) {
+        toast.warn("Logout failed");
+      }
+    } catch (error) {
+      toast.warn("Logout error:", error);
+    } finally {
+      toast.success("Logout Success");
+      dispatch(logout());
+      navigate("/login");
+    }
+  };
 
   return (
     <div className="navbar bg-[#e2136e]">
@@ -17,7 +41,7 @@ const Navbar = ({ role = "user", handleLogout }) => {
             tabIndex={0}
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
           >
-            {role === "user" && (
+            {role === "User" && (
               <>
                 <li>
                   <NavLink to="/user/dashboard">Dashboard</NavLink>
@@ -27,7 +51,7 @@ const Navbar = ({ role = "user", handleLogout }) => {
                 </li>
               </>
             )}
-            {role === "agent" && (
+            {role === "Agent" && (
               <>
                 <li>
                   <NavLink to="/agent/dashboard">Dashboard</NavLink>
@@ -37,7 +61,7 @@ const Navbar = ({ role = "user", handleLogout }) => {
                 </li>
               </>
             )}
-            {role === "admin" && (
+            {role === "Admin" && (
               <>
                 <li>
                   <NavLink to="/admin/dashboard">Dashboard</NavLink>
@@ -52,10 +76,7 @@ const Navbar = ({ role = "user", handleLogout }) => {
             )}
             <li>
               <button
-                onClick={() => {
-                  handleLogout();
-                  navigate("/login");
-                }}
+                onClick={handleLogout}
                 className="text-white text-lg font-bold hover:text-gray-200"
               >
                 Logout
@@ -69,7 +90,7 @@ const Navbar = ({ role = "user", handleLogout }) => {
       </div>
       <div className="navbar-center hidden md:flex">
         <ul className="menu menu-horizontal px-1">
-          {role === "user" && (
+          {role === "User" && (
             <>
               <li>
                 <NavLink
@@ -89,7 +110,7 @@ const Navbar = ({ role = "user", handleLogout }) => {
               </li>
             </>
           )}
-          {role === "agent" && (
+          {role === "Agent" && (
             <>
               <li>
                 <NavLink
@@ -109,7 +130,7 @@ const Navbar = ({ role = "user", handleLogout }) => {
               </li>
             </>
           )}
-          {role === "admin" && (
+          {role === "Admin" && (
             <>
               <li>
                 <NavLink
@@ -140,30 +161,48 @@ const Navbar = ({ role = "user", handleLogout }) => {
         </ul>
       </div>
       <div className="navbar-end">
-        <button
-          onClick={() => navigate("/login")}
-          className="btn btn-sm bg-white text-blue-500"
-        >
-          Login
-        </button>
-        <button
-          onClick={() => navigate("/register")}
-          className="btn btn-sm bg-white text-blue-500 ml-2"
-        >
-          Register
-        </button>
+        {currentUser ? (
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="text-white text-lg font-bold"
+            >
+              Profile
+            </button>
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 bg-white text-black rounded-lg shadow-lg w-48">
+                <div className="p-4 border-b">
+                  <p className="font-bold">{currentUser.user.username}</p>
+                  <p className="text-sm">{currentUser.user.email}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full px-4 py-2 text-red-600 hover:bg-gray-100 text-left"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={() => navigate("/login")}
+              className="btn btn-sm bg-white text-blue-500"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => navigate("/register")}
+              className="btn btn-sm bg-white text-blue-500 ml-2"
+            >
+              Register
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
-};
-
-Navbar.propTypes = {
-  role: PropTypes.string,
-  handleLogout: PropTypes.func.isRequired,
-};
-
-Navbar.defaultProps = {
-  role: "user",
 };
 
 export default Navbar;
