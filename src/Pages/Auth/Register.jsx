@@ -13,7 +13,10 @@ const RegisterPage = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    data.role = "user";
+    data.email = data.email.toLowerCase().trim();
+    data.number = data.number.trim();
+    data.password = data.password.trim();
+    data.role = "User";
     data.balance = 40;
 
     try {
@@ -45,6 +48,8 @@ const RegisterPage = () => {
                 required: "Username is required",
                 minLength: { value: 3, message: "Minimum length is 3" },
                 maxLength: { value: 20, message: "Maximum length is 20" },
+                validate: (value) =>
+                  !/\s/.test(value) || "Username cannot contain spaces",
               })}
               className="input input-bordered w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -66,6 +71,9 @@ const RegisterPage = () => {
                   value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/,
                   message: "Invalid email address",
                 },
+                setValueAs: (value) => value.toLowerCase().trim(),
+                validate: (value) =>
+                  !/\s/.test(value) || "Email cannot contain spaces",
               })}
               className="input input-bordered w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -89,6 +97,9 @@ const RegisterPage = () => {
                   value: /^[0-9]+$/,
                   message: "Only numbers are allowed",
                 },
+                validate: (value) =>
+                  !/\s/.test(value) || "Phone number cannot contain spaces",
+                setValueAs: (value) => value.trim(),
               })}
               className="input input-bordered w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -118,6 +129,9 @@ const RegisterPage = () => {
                   value: /^[0-9]+$/,
                   message: "Only numbers are allowed",
                 },
+                validate: (value) =>
+                  !/\s/.test(value) || "Password cannot contain spaces",
+                setValueAs: (value) => value.trim(),
               })}
               className="input input-bordered w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
